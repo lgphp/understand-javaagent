@@ -11,13 +11,6 @@
 
     <artifactId>demo</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-        </dependency>
-    </dependencies>
-
     <build>
         <finalName>demo</finalName>
         <plugins>

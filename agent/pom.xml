@@ -11,6 +11,14 @@
 
     <artifactId>agent</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+        </dependency>
+    </dependencies>
+
+
     <build>
         <finalName>agent</finalName>
         <plugins>
@@ -25,6 +33,7 @@
                         <transformer
                                 implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <manifestEntries>
+                                <Main-Class>me.zhongl.agent.Main</Main-Class>
                                 <Premain-Class>me.zhongl.agent.Main</Premain-Class>
                                 <Agent-Class>me.zhongl.agent.Main</Agent-Class>
                                 <Can-Retransform-Classes>true</Can-Retransform-Classes>
