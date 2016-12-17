@@ -5,35 +5,35 @@ import net.bytebuddy.asm.Advice;
 import java.util.LinkedList;
 import java.util.List;
 
-public interface Profiler {
-    ThreadLocal<Frame> current = new ThreadLocal<>();
+public class Profiler {
+    private final static ThreadLocal<Frame> CURRENT = new ThreadLocal<>();
 
     @Advice.OnMethodEnter(inline = false)
-    static long enter() {
-        final Frame frame = current.get();
+    public static long enter() {
+        final Frame frame = CURRENT.get();
         if (frame == null) {
-            current.set(new Frame());
+            CURRENT.set(new Frame());
         } else {
-            current.set(frame.fork());
+            CURRENT.set(frame.in());
         }
         return System.nanoTime();
     }
 
     @Advice.OnMethodExit(inline = false)
-    static void exit(@Advice.Origin String method, @Advice.Enter long begin) {
-        final Frame frame = current.get();
-        final Frame parent = frame.join(method, System.nanoTime() - begin);
+    public static void exit(@Advice.Origin String method, @Advice.Enter long begin) {
+        final Frame frame = CURRENT.get();
+        final Frame parent = frame.out(method, System.nanoTime() - begin);
         if (parent != null) {
-            current.set(parent);
+            CURRENT.set(parent);
         } else {
             System.out.println(frame.toString());
         }
     }
 
-    class Frame {
-        final Frame       parent;
-        final List<Frame> children;
-        final int         level;
+    public static class Frame {
+        private final Frame       parent;
+        private final List<Frame> children;
+        private final int         level;
 
         String method;
         long   elapseNanos;
@@ -48,13 +48,13 @@ public interface Profiler {
             this.children = new LinkedList<>();
         }
 
-        Frame fork() {
+        Frame in() {
             final Frame frame = new Frame(this, level + 1);
             children.add(frame);
             return frame;
         }
 
-        Frame join(String method, long elapseNanos) {
+        Frame out(String method, long elapseNanos) {
             this.method = method;
             this.elapseNanos = elapseNanos;
             return parent;
