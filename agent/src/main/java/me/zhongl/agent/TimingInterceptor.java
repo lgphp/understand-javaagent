@@ -15,7 +15,7 @@ public class TimingInterceptor {
         try {
             return callable.call();
         } finally {
-            System.out.println(method + " took " + (System.currentTimeMillis() - start));
+            System.out.println(method + " took " + (System.currentTimeMillis() - start) + " ms");
         }
     }
 }

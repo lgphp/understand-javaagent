@@ -2,13 +2,13 @@ package me.zhongl.agent;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
-import net.bytebuddy.implementation.MethodDelegation;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import static net.bytebuddy.implementation.MethodDelegation.to;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 public class Main {
@@ -39,10 +39,8 @@ public class Main {
     private static void main(String args, Instrumentation inst) {
         new AgentBuilder.Default()
                 .type(named("me.zhongl.demo.Main"))
-                .transform((builder, typeDescription, classloader) -> {
-                    return builder.method(named("main"))
-                                  .intercept(MethodDelegation.to(TimingInterceptor.class));
-                }).installOn(inst);
+                .transform((b, td, cl) -> b.method(named("main")).intercept(to(TimingInterceptor.class)))
+                .installOn(inst);
     }
 
 }
