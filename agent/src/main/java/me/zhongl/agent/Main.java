@@ -2,14 +2,17 @@ package me.zhongl.agent;
 
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.utility.JavaModule;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import static net.bytebuddy.implementation.MethodDelegation.to;
-import static net.bytebuddy.matcher.ElementMatchers.named;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class Main {
     public static void premain(String args, Instrumentation inst) {
@@ -38,8 +41,20 @@ public class Main {
 
     private static void main(String args, Instrumentation inst) {
         new AgentBuilder.Default()
-                .type(named("me.zhongl.demo.Main"))
-                .transform((b, td, cl) -> b.method(named("main")).intercept(to(TimingInterceptor.class)))
+                .with(AgentBuilder.LocationStrategy.ForClassLoader.WEAK)
+                .with(new AgentBuilder.Listener.Adapter() {
+                    @Override
+                    public void onTransformation(TypeDescription td, ClassLoader cl, JavaModule m, DynamicType dt) {
+                        System.out.println("[TRANSFORM] " + td);
+                    }
+
+                    @Override
+                    public void onError(String typeName, ClassLoader classLoader, JavaModule module, Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                })
+                .type(not(nameStartsWith("me.zhongl.agent")), not(isBootstrapClassLoader()))
+                .transform((b, td, cl) -> b.visit(Advice.to(Profiler.class).on(any())))
                 .installOn(inst);
     }
 
