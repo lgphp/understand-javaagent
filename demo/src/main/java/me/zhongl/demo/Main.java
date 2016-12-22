@@ -1,21 +1,12 @@
 package me.zhongl.demo;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class Main {
     public static void main(String[] args) throws Exception {
-        a();
-        b();
+        SpringApplication.run(Main.class, args);
     }
 
-    private static void b() throws InterruptedException {
-        c();
-        Thread.sleep(1);
-    }
-
-    private static void c() throws InterruptedException {
-        Thread.sleep(1);
-    }
-
-    private static void a() throws InterruptedException {
-        Thread.sleep(1);
-    }
 }
