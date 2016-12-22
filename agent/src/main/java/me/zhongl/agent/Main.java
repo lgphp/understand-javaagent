@@ -41,7 +41,6 @@ public class Main {
 
     private static void main(String args, Instrumentation inst) {
         new AgentBuilder.Default()
-                .with(AgentBuilder.LocationStrategy.ForClassLoader.WEAK)
                 .with(new AgentBuilder.Listener.Adapter() {
                     @Override
                     public void onTransformation(TypeDescription td, ClassLoader cl, JavaModule m, DynamicType dt) {
