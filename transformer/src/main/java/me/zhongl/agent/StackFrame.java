@@ -81,6 +81,9 @@ public final class StackFrame {
 
     private static StackFrame join(StackFrame frame) {
         frame.end = System.nanoTime();
+        if (frame.end - frame.begin < 1000 * 1000) {
+            frame.parent.children.remove(frame);
+        }
         return frame.parent;
     }
 

@@ -19,18 +19,21 @@ import static net.bytebuddy.dynamic.loading.ClassInjector.UsingInstrumentation.T
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class TraceTransformation implements Consumer<Instrumentation> {
+
+    public static final String                                   SPRING_WEB = "org.springframework.web";
+    public static final ElementMatcher.Junction<TypeDescription> SERVLET    = isSubTypeOf(Servlet.class);
+
     @Override
     public void accept(Instrumentation inst) {
         final Class<StackFrame> type = StackFrame.class;
         Map<? extends TypeDescription, byte[]> map = Collections.singletonMap(desc(type), bytesOf(type));
         UsingInstrumentation.of(new File("/tmp"), BOOTSTRAP, inst).inject(map);
 
-        new AgentBuilder.Default()
-//                .with(new Debugger())
-.ignore(any(), loaders()).or(types())
-.type(isSubTypeOf(Servlet.class)).transform(serviceMethod())
-.type(not(isSubTypeOf(Servlet.class))).transform(traceableMethods())
-.installOn(inst);
+        new AgentBuilder.Default()/*.with(new Debugger())*/
+                                  .ignore(any(), loaders()).or(types())
+                                  .type(SERVLET).transform(serviceMethod())
+                                  .type(not(SERVLET).and(nameStartsWith(SPRING_WEB))).transform(traceableMethods())
+                                  .installOn(inst);
     }
 
     private ElementMatcher.Junction<TypeDescription> types() {
@@ -66,7 +69,8 @@ public class TraceTransformation implements Consumer<Instrumentation> {
 
     private AgentBuilder.Transformer traceableMethods() {
         return (b, td, cl) -> b.visit(Advice.to(Advices.Traceable.class).on(
-                not(isFinalizer())
+                isPublic()
+                        .and(not(isFinalizer()))
                         .and(not(isGetter()))
                         .and(not(isSetter()))
                         .and(not(isToString()))
@@ -75,8 +79,8 @@ public class TraceTransformation implements Consumer<Instrumentation> {
                         .and(not(isClone()))
                         .and(not(isConstructor()))
                         .and(not(isTypeInitializer()))
-                        .and(not(isNative()))))
-                ;
+                        .and(not(isNative()))
+        ));
     }
 
 

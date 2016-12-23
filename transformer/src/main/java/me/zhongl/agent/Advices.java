@@ -28,7 +28,7 @@ public interface Advices {
     class Traceable {
 
         @Advice.OnMethodEnter
-        public static void enter(@Advice.Origin String method) {
+        public static void enter(@Advice.Origin("#t::#m") String method) {
             StackFrame.fork(method);
         }
 
